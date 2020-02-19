@@ -9,11 +9,11 @@ int main()
 	m_scan.BeginScan("D:");
 
 	while (m_scan.IsFindFinish()) {
-		static int i = 0;
-		++i;
-		Sleep(1);
-		if(i > 100)
-			m_scan.StopScan();
+// 		static int i = 0;
+// 		++i;
+// 		Sleep(1);
+// 		if(i > 100)
+// 			m_scan.StopScan();
 	};
 	std::cout << clock() << std::endl;
 	system("pause");

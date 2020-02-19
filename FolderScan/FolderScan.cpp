@@ -96,7 +96,7 @@ void CFolderScan::GetFiles(std::string fileFolderPath)
 			//判断是否为"."当前目录，".."上一层目录
 			if ((m_ThreadPool && strcmp(fileInfo.name, ".") != 0) && (strcmp(fileInfo.name, "..") != 0))
 			{
-				std::cout << " 添加查找目录：" << fileFolderPath << " " << fileInfo.name << std::endl;
+				//std::cout << " 添加查找目录：" << fileFolderPath << " " << fileInfo.name << std::endl;
 				AddTask();
 				m_ThreadPool->enqueue(&CFolderScan::GetFiles, this, file.name);
 			}
@@ -130,13 +130,13 @@ void CFolderScan::AddTask()
 {
 	std::unique_lock<std::mutex> lock(m_TaskMutex);
 	++m_iTask;
-	std::cout << "AddTask = " << m_iTask << std::endl;
+	//std::cout << "AddTask = " << m_iTask << std::endl;
 }
 void CFolderScan::DeleteTask()
 {
 	std::unique_lock<std::mutex> lock(m_TaskMutex);
 	--m_iTask;
-	std::cout << "DeleteTask = " << m_iTask << std::endl;
+	//std::cout << "DeleteTask = " << m_iTask << std::endl;
 }
 
 void CFolderScan::CheckFindFinish()
