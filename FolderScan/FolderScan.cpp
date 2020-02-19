@@ -16,6 +16,7 @@ CFolderScan::CFolderScan(IFolderScanCallBack* callBack)
 
 CFolderScan::~CFolderScan()
 {
+	StopScan();
 	if (m_ThreadPool)
 	{
 		delete m_ThreadPool;
@@ -47,10 +48,6 @@ void CFolderScan::BeginScan(const std::string& folderName)
 		m_ThreadPool->enqueue(&CFolderScan::GetFiles, this, m_folderName);
 		m_result = m_ThreadPool->enqueue(&CFolderScan::CheckFindFinish, this);
 
-	}
-	else
-	{
-		GetFiles(m_folderName);
 	}
 }
 
@@ -85,6 +82,9 @@ void CFolderScan::GetFiles(std::string fileFolderPath)
 
 	do
 	{
+		if(!m_finding)
+			break;
+
 		file.name = fileFolderPath + "\\" + fileInfo.name;
 		file.size = fileInfo.size;
 		if (fileInfo.attrib & _A_ARCH)
@@ -94,22 +94,16 @@ void CFolderScan::GetFiles(std::string fileFolderPath)
 		else if (fileInfo.attrib & _A_SUBDIR) //目录
 		{
 			//判断是否为"."当前目录，".."上一层目录
-			if ((strcmp(fileInfo.name, ".") != 0) && (strcmp(fileInfo.name, "..") != 0))
-			{			
-				if (m_ThreadPool)
-				{
-					AddTask();
-					m_ThreadPool->enqueue(&CFolderScan::GetFiles, this, file.name);
-				}
-				else
-				{
-					GetFiles(file.name);
-				}
+			if ((m_ThreadPool && strcmp(fileInfo.name, ".") != 0) && (strcmp(fileInfo.name, "..") != 0))
+			{
+				std::cout << " 添加查找目录：" << fileFolderPath << " " << fileInfo.name << std::endl;
+				AddTask();
+				m_ThreadPool->enqueue(&CFolderScan::GetFiles, this, file.name);
 			}
 
 		}
-	} while (_findnext(findResult, &fileInfo) == 0 || !m_finding);
-	
+	} while (_findnext(findResult, &fileInfo) == 0);
+
 	InsertFileInfo(vecfileTemp);
 	_findclose(findResult);
 	DeleteTask();
@@ -125,19 +119,24 @@ bool CFolderScan::IsScaning()
 
 void CFolderScan::StopScan()
 {
-	std::unique_lock<std::mutex> lock(m_findMutex);
-	m_finding = false;
+	if (m_finding)
+	{
+		std::unique_lock<std::mutex> lock(m_findMutex);
+		m_finding = false;
+	}
  }
 
 void CFolderScan::AddTask()
 {
 	std::unique_lock<std::mutex> lock(m_TaskMutex);
 	++m_iTask;
+	std::cout << "AddTask = " << m_iTask << std::endl;
 }
 void CFolderScan::DeleteTask()
 {
 	std::unique_lock<std::mutex> lock(m_TaskMutex);
 	--m_iTask;
+	std::cout << "DeleteTask = " << m_iTask << std::endl;
 }
 
 void CFolderScan::CheckFindFinish()

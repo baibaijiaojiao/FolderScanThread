@@ -8,11 +8,8 @@ typedef void( *ReleaseFun)(IFolderScan*);
 CFolderScanRun::CFolderScanRun()
 : IFolderScanCallBack()
 {
-#ifdef DEBUG
-	m_hDll = LoadLibrary("FolderScan_d.dll");
-#else
+
 	m_hDll = LoadLibrary("FolderScan.dll");
-#endif // DEBUG
 
 	if (m_hDll != NULL)
 	{
