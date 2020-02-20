@@ -11,7 +11,7 @@ int main()
 	while (m_scan.IsFindFinish()) {
 // 		static int i = 0;
 // 		++i;
-// 		Sleep(1);
+		Sleep(1);
 // 		if(i > 100)
 // 			m_scan.StopScan();
 	};
